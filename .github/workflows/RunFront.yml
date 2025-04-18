@@ -23,10 +23,24 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ steps.vars.outputs.image }} .
 
-      - name: Run container
+      - name: Choosing port and run container
         id: run
         run: |
-          docker run -d --name=${{ steps.vars.outputs.image }} ${{ steps.vars.outputs.image }}
+          for port in $(seq 8081 8200); do
+            if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
+              PORT=$port
+              break
+            fi
+          done
+          IP=$(curl -s ifconfig.me)
 
-      - name: Show IP
-        run: echo "Контейнер с фронтовой частью запущен"
+          echo "Chosen port: $PORT"
+          echo "External IP: $IP"
+
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "ip=$IP" >> "$GITHUB_OUTPUT"
+
+          docker run -d -p $PORT:3000 ${{ steps.vars.outputs.image }}
+
+      - name: Show ip
+        run: echo "IP http://${{ steps.run.outputs.ip }}:${{ steps.run.outputs.port }}"
