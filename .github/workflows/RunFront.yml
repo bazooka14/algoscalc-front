@@ -40,7 +40,7 @@ jobs:
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "ip=$IP" >> "$GITHUB_OUTPUT"
 
-          docker run -d -p $PORT:3000 ${{ steps.vars.outputs.image }}
+          docker run -d -p $PORT:80 ${{ steps.vars.outputs.image }}
 
       - name: Show ip
         run: echo "IP http://${{ steps.run.outputs.ip }}:${{ steps.run.outputs.port }}"
