@@ -20,11 +20,8 @@ jobs:
           echo "IMAGE_NAME=$IMAGE_NAME"
           echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
-      - name: Build Docker image
-        run: docker build -t ${{ steps.vars.outputs.image }} .
-
-      - name: Choosing port and run container
-        id: run
+      - name: Choosing free port
+        id: choose-port
         run: |
           for port in $(seq 8081 8200); do
             if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
@@ -40,7 +37,11 @@ jobs:
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "ip=$IP" >> "$GITHUB_OUTPUT"
 
-          docker run -d -p $PORT:80 ${{ steps.vars.outputs.image }}
+      - name: Build and Run via Docker Compose
+        run: |
+          export FRONTEND_PORT=${{ steps.choose-port.outputs.port }}
+          docker-compose build
+          docker-compose up -d
 
-      - name: Show ip
-        run: echo "IP http://${{ steps.run.outputs.ip }}:${{ steps.run.outputs.port }}"
+      - name: Show IP
+        run: echo "IP http://${{ steps.choose-port.outputs.ip }}:${{ steps.choose-port.outputs.port }}"
