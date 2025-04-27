@@ -40,8 +40,8 @@ jobs:
       - name: Build and Run via Docker Compose
         run: |
           export FRONTEND_PORT=${{ steps.choose-port.outputs.port }}
-          docker-compose build
-          docker-compose up -d
+          docker compose build
+          docker compose up -d
 
       - name: Show IP
         run: echo "IP http://${{ steps.choose-port.outputs.ip }}:${{ steps.choose-port.outputs.port }}"
